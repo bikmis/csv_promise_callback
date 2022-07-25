@@ -25,7 +25,7 @@
         let reader = new FileReader();
         reader.readAsBinaryString(file);
         reader.onload = function(){
-          let lines = reader.result.split('\n'); //remove the first 3 ghost caracters and split on new line creating an array of lines
+          let lines = reader.result.split('\n'); //split on new line creating an array of lines
           let linesWithoutHeader = lines.slice(1); //removes the header line
           linesWithoutHeader.pop(); //removes the last blank line from the array
           linesWithoutHeader.forEach(line => {
