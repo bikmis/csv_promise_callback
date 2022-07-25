@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <label for="choose-file">Upload csv File:</label>
+  <input id="choose-file" type="file" onchange="readCsvFile(this)"> 
+  <br>
+  <br>
+  <button onclick="getUsers(downloadCsvFile)">Download csv file</button>
+  <br>
+  <br>
+  <button onclick="downloadCsvUsingPromise()">Download csv (Promise example)</button>
+ 
+  <script>
+      function readCsvFile(input){
+        let finalJsonResult = [];
+
+        let file = input.files[0];
+
+        let reader = new FileReader();
+        reader.readAsBinaryString(file);
+        reader.onload = function(){
+          let lines = reader.result.split('\n'); //remove the first 3 ghost caracters and split on new line creating an array of lines
+          let linesWithoutHeader = lines.slice(1); //removes the header line
+          linesWithoutHeader.pop(); //removes the last blank line from the array
+          linesWithoutHeader.forEach(line => {
+            var lineWithoutCarriageReturn = line.slice(0, -1); //removes carriage return \r from the line
+            var row = lineWithoutCarriageReturn.split(",");
+            var rowInJsonObj = { id: row[0], firstName: row[1], lastName: row[2]}
+            finalJsonResult.push(rowInJsonObj);
+          });
+
+          console.log(finalJsonResult);
+        } 
+      }
+
+    function downloadCsvFile(data) {
+      let csvContent = "data:text/csv;characterset=utf-8,";
+      let csvRow = "ID,Name,User Name\r\n";
+      data.forEach(x => {
+          csvRow += x["id"] + ',' + x['name'] + ',' + x['username'] + '\r\n';        
+      });
+
+      csvContent += csvRow;
+      let hiddenAnchorElement = document.createElement('a');
+      hiddenAnchorElement.href = csvContent;
+      hiddenAnchorElement.target = '_blank';
+      hiddenAnchorElement.download = 'test_file.csv';
+      hiddenAnchorElement.click();
+    // window.open(csvContent); //this one will save as download.csv, you add the anchor tag only for filename
+    }
+
+    let getUsers = function(createAndDownloadCsv_cb){ 
+      const http = new XMLHttpRequest();
+      const url='https://jsonplaceholder.typicode.com/users';
+      http.open("GET", url);
+      http.send();
+      http.onload=()=>{
+        if(http.status == 200){
+          var jsonData = JSON.parse(http.responseText);
+          createAndDownloadCsv_cb(jsonData);
+        }
+      }
+    }
+
+    let getUsersPromise = function() {
+      let promiseUsers = new Promise((resolve, reject)=> {
+        const httpRequest = new XMLHttpRequest();
+        const url='https://jsonplaceholder.typicode.com/usersx';
+        httpRequest.open("GET", url);
+        httpRequest.send();
+        httpRequest.onload=()=>{
+          if(httpRequest.status == 200){
+            let users = JSON.parse(httpRequest.response);          
+            resolve(users);
+          } else {
+            reject("service call failed with status: " + httpRequest.status);
+          }
+        }
+      });
+      return promiseUsers;
+    }
+
+    let downloadCsvUsingPromise = function() {
+      getUsersPromise().then(
+        (result) => {
+          downloadCsvFile(result);
+        }, 
+        (error) => {
+          console.log(error)
+        })
+    }
+  </script>
+</body>
+</html>
