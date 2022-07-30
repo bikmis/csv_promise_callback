@@ -146,7 +146,7 @@
         
         styleSheet.insertRule('@media print {' +
           '.print-me {display: block  !important;} ' +
-          'div, p, label, input, button, br {display: none}}');
+          'div, p, label, input, button, br {display: none}}', styleSheet.cssRules.length);
         window.print();   
         element.innerHTML = "List of Names: <br class='print-me'><br class='print-me'>";         
       });
